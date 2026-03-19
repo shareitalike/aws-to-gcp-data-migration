@@ -44,3 +44,18 @@ You don't need to manually create the S3 bucket! The `upload_to_s3.py` script wi
 ```powershell
 python 02_aws_s3/upload_to_s3.py
 ```
+
+## Step 6: Viewing Your S3 Buckets
+
+There are two ways to see your data once it's uploaded:
+
+**Option 1: The Browser (Easiest)**
+1. Log in to the [AWS Console](https://console.aws.amazon.com/) using your **Root User email** (not the IAM user we just created).
+2. Type **S3** into the top search bar and click on it.
+3. Click on your bucket name to browse the files visually.
+
+**Option 2: The Command Line**
+If you want to view from your terminal, install the AWS CLI (`pip install awscli`), run `aws configure`, and list files with:
+```powershell
+aws s3 ls s3://your-bucket-name/ --recursive
+```
