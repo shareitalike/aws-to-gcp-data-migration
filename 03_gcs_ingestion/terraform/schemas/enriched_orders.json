@@ -1,0 +1,16 @@
+[
+  {"name": "order_id",      "type": "STRING",    "mode": "REQUIRED",  "description": "Unique order identifier"},
+  {"name": "user_id",       "type": "STRING",    "mode": "NULLABLE",  "description": "Customer user ID"},
+  {"name": "amount",        "type": "FLOAT64",   "mode": "REQUIRED",  "description": "Order amount"},
+  {"name": "currency",      "type": "STRING",    "mode": "REQUIRED",  "description": "Currency code"},
+  {"name": "status",        "type": "STRING",    "mode": "NULLABLE",  "description": "Order status"},
+  {"name": "event_count",   "type": "INT64",     "mode": "NULLABLE",  "description": "Number of events for this user"},
+  {"name": "event_types",   "type": "STRING",    "mode": "NULLABLE",  "description": "Comma-separated event types"},
+  {"name": "user_segment",  "type": "STRING",    "mode": "NULLABLE",  "description": "User segment classification"},
+  {"name": "lifetime_value","type": "FLOAT64",   "mode": "NULLABLE",  "description": "Customer lifetime value"},
+  {"name": "country",       "type": "STRING",    "mode": "NULLABLE",  "description": "User country code"},
+  {"name": "process_date",  "type": "DATE",      "mode": "REQUIRED",  "description": "Processing date (partition key)"},
+  {"name": "row_hash",      "type": "STRING",    "mode": "NULLABLE",  "description": "SHA-256 hash for change detection"},
+  {"name": "created_at",    "type": "TIMESTAMP", "mode": "NULLABLE",  "description": "Record creation time"},
+  {"name": "updated_at",    "type": "TIMESTAMP", "mode": "NULLABLE",  "description": "Last update time"}
+]

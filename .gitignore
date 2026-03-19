@@ -1,0 +1,16 @@
+.env
+*.pyc
+__pycache__/
+.terraform/
+*.tfstate*
+output_data/
+*.parquet
+*.csv
+!01_sample_data/*.csv
+logs/
+airflow.db
+airflow.cfg
+webserver_config.py
+*.json
+!03_gcs_ingestion/terraform/**/*.json
+.snapshots/
