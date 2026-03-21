@@ -166,7 +166,7 @@ resource "google_bigquery_table" "production_orders" {
     require_partition_filter = true
   }
 
-  clustering = ["user_id", "event_type"]
+  clustering = ["user_id", "event_types"]
 
   schema = file("${path.module}/schemas/enriched_orders.json")
 

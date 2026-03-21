@@ -14,3 +14,4 @@ webserver_config.py
 *.json
 !03_gcs_ingestion/terraform/**/*.json
 .snapshots/
+*.db

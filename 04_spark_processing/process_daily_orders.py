@@ -37,6 +37,8 @@ def create_spark_session():
     return (SparkSession.builder
         .appName("daily_orders_processing")
         .master("local[*]")
+        .config("spark.driver.host", "127.0.0.1")
+        .config("spark.driver.bindAddress", "127.0.0.1")
         # AQE — handles skew and partition coalescing
         .config("spark.sql.adaptive.enabled", "true")
         .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
