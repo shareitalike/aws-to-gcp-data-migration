@@ -1,6 +1,6 @@
-# ☁️ AWS-to-GCP Data Migration Pipeline
+# 🏗️ Cloud Data Engineering & ETL Migration Pipeline
 
-A professional-grade, end-to-end data engineering project migrating e-commerce workloads from AWS S3 to Google Cloud BigQuery using **PySpark**, **Terraform**, and **Airflow**.
+A professional-grade, end-to-end **Data Engineering** project migrating 100K+ transactional records from AWS S3 to Google Cloud BigQuery using **PySpark**, **Terraform**, and **Airflow**.
 
 ---
 
