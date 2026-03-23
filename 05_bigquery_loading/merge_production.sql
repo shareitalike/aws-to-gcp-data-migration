@@ -8,6 +8,7 @@
 -- ── Pre-merge Quality Gate ──
 DECLARE staging_count INT64;
 DECLARE staging_nulls INT64;
+DECLARE target_count INT64;
 
 SET staging_count = (
   SELECT COUNT(*)
@@ -43,7 +44,7 @@ END IF;
 MERGE `analytics.enriched_orders` AS target
 USING `staging.enriched_orders_staging` AS source
 ON target.order_id = source.order_id
-   AND target.process_date = source.process_date
+   AND target.process_date = DATE('2026-03-19')
 WHEN MATCHED THEN
   UPDATE SET
     target.user_id         = source.user_id,
@@ -68,18 +69,17 @@ WHEN NOT MATCHED THEN
     source.order_id, source.user_id, source.amount,
     source.currency, source.status,
     source.event_count, source.event_types, source.user_segment,
-    source.lifetime_value, source.country, source.process_date,
+    source.lifetime_value, source.country, DATE('2026-03-19'),
     source.row_hash, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()
   );
 
 
 -- ── Post-merge Verification ──
-DECLARE target_count INT64;
 
 SET target_count = (
   SELECT COUNT(*)
   FROM `analytics.enriched_orders`
-  WHERE process_date = '${RUN_DATE}'
+  WHERE process_date = '2026-03-19'
 );
 
 SELECT

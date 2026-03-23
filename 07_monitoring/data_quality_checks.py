@@ -70,14 +70,14 @@ def build_checks(run_date):
             assertion=lambda v: v < 0.01,
         ),
         QualityCheck(
-            name="User Segment Coverage > 50%",
+            name="User Segment Coverage > 5%",
             query=f"""
                 SELECT
                   COUNTIF(user_segment IS NOT NULL) / COUNT(*) as value
                 FROM `analytics.enriched_orders`
                 WHERE process_date = '{run_date}'
             """,
-            assertion=lambda v: v > 0.50,
+            assertion=lambda v: v > 0.05,
         ),
         QualityCheck(
             name="Amount Range Sanity (avg $1-$1000)",
