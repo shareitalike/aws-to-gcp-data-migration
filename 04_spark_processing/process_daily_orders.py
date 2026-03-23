@@ -22,6 +22,7 @@ Usage:
 
 import argparse
 import sys
+import yaml
 from pathlib import Path
 
 from pyspark.sql import SparkSession
@@ -58,14 +59,19 @@ def create_spark_session():
         .getOrCreate())
 
 
-def read_data(spark, source, run_date):
+def read_data(spark, source, run_date, config=None):
     """Read orders, events, and segments from either GCS or local."""
     import os
     from dotenv import load_dotenv
     load_dotenv(Path(__file__).parent.parent / ".env")
 
     if source == "gcs":
-        bucket_validated = os.getenv("GCS_BUCKET_VALIDATED")
+        # Use YAML config if provided, otherwise fallback to .env
+        if config:
+            bucket_validated = config['gcs']['buckets']['validated']
+        else:
+            bucket_validated = os.getenv("GCS_BUCKET_VALIDATED")
+            
         orders_path = f"gs://{bucket_validated}/source=orders/dt={run_date}/"
         events_path = f"gs://{bucket_validated}/source=events/dt={run_date}/"
         segments_path = f"gs://{bucket_validated}/source=user_segments/latest/"
@@ -165,14 +171,17 @@ def process(orders, events, segments, run_date):
     return enriched
 
 
-def write_output(enriched, source, run_date):
+def write_output(enriched, source, run_date, config=None):
     """Write partitioned Parquet to GCS or local."""
     import os
     from dotenv import load_dotenv
     load_dotenv(Path(__file__).parent.parent / ".env")
 
     if source == "gcs":
-        bucket = os.getenv("GCS_BUCKET_PROCESSED")
+        if config:
+            bucket = config['gcs']['buckets']['processed']
+        else:
+            bucket = os.getenv("GCS_BUCKET_PROCESSED")
         output_path = f"gs://{bucket}/enriched_orders/"
     else:
         output_path = str(
@@ -195,7 +204,18 @@ def main():
         "--source", choices=["gcs", "local"], default="local",
         help="Data source: 'gcs' or 'local' (default: local)",
     )
+    parser.add_argument(
+        "--config", help="Path to YAML config file",
+        default=str(Path(__file__).parent.parent / "config" / "pipeline_config.yaml")
+    )
     args = parser.parse_args()
+
+    # Load config if exists
+    config = None
+    if args.config and Path(args.config).exists():
+        with open(args.config, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+            print(f"  Loaded config from: {args.config}")
 
     print("=" * 60)
     print("  Stage 4: PySpark Processing")
@@ -207,9 +227,9 @@ def main():
     spark = create_spark_session()
 
     try:
-        orders, events, segments = read_data(spark, args.source, args.date)
+        orders, events, segments = read_data(spark, args.source, args.date, config)
         enriched = process(orders, events, segments, args.date)
-        write_output(enriched, args.source, args.date)
+        write_output(enriched, args.source, args.date, config)
     finally:
         spark.stop()
 

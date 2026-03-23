@@ -1,0 +1,32 @@
+# ⚙️ Pipeline Configuration
+# Production-level settings for the AWS-to-GCP Migration
+
+project:
+  id: "aws-gcp-migration-490909"
+  region: "us-central1"
+
+gcs:
+  buckets:
+    raw: "aws-gcp-migration-490909-raw"
+    validated: "aws-gcp-migration-490909-validated"
+    quarantine: "aws-gcp-migration-490909-quarantine"
+    processed: "aws-gcp-migration-490909-processed"
+  
+spark:
+  app_name: "EnrichedOrdersPipeline"
+  partitions: 4
+  output_format: "parquet"
+  
+bigquery:
+  datasets:
+    staging: "staging"
+    analytics: "analytics"
+  tables:
+    staging_orders: "enriched_orders_staging"
+    production_orders: "enriched_orders"
+
+# Data Quality Thresholds
+quality_gate:
+  min_row_count: 1
+  max_duplicate_rate: 0.01
+  min_segment_coverage: 0.05
