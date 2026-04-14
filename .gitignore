@@ -44,8 +44,18 @@ tests/.pytest_cache/
 docs/resume_*.md
 docs/junior_*.md
 docs/wsl_*.md
-docs/manual_vs_automated_flow.md
+docs/manual_*.md
+docs/simulation_*.md
 docs/implementation_plan.md
-docs/interview_script_migration.md
+docs/interview_*.md
+docs/maturity_*.md
+docs/design_*.md
+docs/tradeoffs_*.md
 docs/gap_analysis.md
 execution_order.md
+
+# Interview-Ready Content (Annotated code and detailed walkthroughs)
+interview_ready/
+*_interview_annotated.*
+*_interview_ready.*
+learning_resources/
