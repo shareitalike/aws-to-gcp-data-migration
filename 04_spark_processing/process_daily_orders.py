@@ -34,13 +34,36 @@ from pyspark.sql.functions import (
 
 
 def create_spark_session():
-    """Create local Spark session with production-like configs."""
+    """
+    Create local Spark session with production-like configs.
+
+    INTERVIEW NOTE: Every Spark config choice below has a "why" — this is
+    exactly what interviewers ask about. "You set AQE to true — what does
+    it actually do? When would you turn it off?"
+    """
     return (SparkSession.builder
         .appName("daily_orders_processing")
         # Networking — critical for Windows stability
+        # INTERVIEW NOTE: Why bind to 127.0.0.1?
+        # DECISION: On Windows, Spark tries to bind to the machine's hostname,
+        #   which may resolve to an external IP. This causes connection refused
+        #   errors. Binding to loopback (127.0.0.1) is always safe for local.
         .config("spark.driver.host", "127.0.0.1")
         .config("spark.driver.bindAddress", "127.0.0.1")
         .config("spark.master", "local[*]")
+
+        # ── AQE (Adaptive Query Execution) ──
+        # INTERVIEW NOTE: What is AQE and why enable it?
+        # DECISION: AQE lets Spark re-optimize the query plan DURING execution
+        #   based on actual data statistics (not estimates). It handles:
+        #   1. Coalesce partitions: Merges tiny partitions after a shuffle.
+        #      Without this, a 200-partition shuffle on 1 MB of data creates
+        #      200 tiny tasks (overhead > actual work).
+        #   2. Skew join: If one partition has 10x more data than others,
+        #      AQE splits it into sub-partitions for parallel processing.
+        # TRADEOFF: AQE adds ~2% overhead for the runtime statistics collection.
+        #   This is negligible for batch jobs. For sub-second streaming, you
+        #   might disable it.
         .config("spark.sql.adaptive.enabled", "true")
         .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
         .config("spark.sql.adaptive.skewJoin.enabled", "true")

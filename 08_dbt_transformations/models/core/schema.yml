@@ -1,3 +1,9 @@
+# INTERVIEW NOTE: Why define tests (unique, not_null) in the schema?
+# DECISION: This is "Data as Code." By defining quality gates in YAML, we:
+#   1. Ensure dbt fails a run if the data is corrupted (Unique/Not Null).
+#   2. Provide auto-documentation for stakeholders.
+#   3. Catch common join-explosion or source-data bugs before they hit dashboards.
+
 version: 2
 
 models:

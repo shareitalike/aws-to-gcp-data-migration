@@ -19,6 +19,16 @@ from datetime import datetime
 from google.cloud import bigquery
 from dotenv import load_dotenv
 
+"""
+INTERVIEW NOTE: Why use WRITE_TRUNCATE for the staging table?
+DECISION: The staging table is a "transient" landing zone. For an idempotent
+    pipeline, each daily run should start with a clean slate for that day's
+    data. WRITE_TRUNCATE ensures that if a load fails halfway and we rerun
+    it, we don't end up with duplicate rows in staging.
+TRADEOFF: This clears ALL data in staging. In a multi-tenant pipeline, you
+    might use WRITE_APPEND with a filter or a specific partition.
+"""
+
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 PROJECT_ID = os.getenv("GCP_PROJECT_ID")

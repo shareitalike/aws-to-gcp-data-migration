@@ -1,3 +1,9 @@
+# INTERVIEW NOTE: Why separate 'staging' and 'analytics' folders?
+# DECISION: This follows the Medallion Architecture (Bronze/Silver/Gold).
+#   1. Staging (Silver): Cleans and types raw data but keeps it normalized.
+#   2. Analytics (Gold): Join-heavy, business-ready stars/snowflakes.
+#   Separation allows for clear lineage and easier debugging.
+
 name: 'bigquery_migration_project'
 version: '1.0.0'
 config-version: 2

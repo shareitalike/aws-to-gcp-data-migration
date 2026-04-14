@@ -1,3 +1,8 @@
+# INTERVIEW NOTE: Why use 'method: oauth' vs 'service_account'?
+# DECISION: We are using OAuth for development. In production, we'd use
+#   a Service Account JSON key. This ensures "Least Privilege" security
+#   where the Airflow worker only has permissions to write to specific datasets.
+
 bigquery_migration_project:
   target: dev
   outputs:
