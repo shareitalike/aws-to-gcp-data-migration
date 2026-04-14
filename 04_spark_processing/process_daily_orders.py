@@ -37,10 +37,10 @@ def create_spark_session():
     """Create local Spark session with production-like configs."""
     return (SparkSession.builder
         .appName("daily_orders_processing")
-        .master("local[*]")
+        # Networking — critical for Windows stability
         .config("spark.driver.host", "127.0.0.1")
         .config("spark.driver.bindAddress", "127.0.0.1")
-        # AQE — handles skew and partition coalescing
+        .config("spark.master", "local[*]")
         .config("spark.sql.adaptive.enabled", "true")
         .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
         .config("spark.sql.adaptive.skewJoin.enabled", "true")
@@ -191,7 +191,6 @@ def write_output(enriched, source, run_date, config=None):
     print(f"  Writing output to: {output_path}")
     (enriched.write
         .mode("overwrite")
-        .partitionBy("process_date")
         .parquet(output_path)
     )
     print(f"  ✓ Output written successfully")

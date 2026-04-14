@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: enriched_orders
+    description: "The final production analytics table containing enriched e-commerce orders."
+    columns:
+      - name: order_id
+        description: "The unique identifier for an order"
+        tests:
+          - unique
+          - not_null
+      - name: amount
+        description: "The total monetary amount"
+      - name: process_date
+        description: "Partitioning date for the data"

@@ -51,7 +51,6 @@ def load_from_local(client, run_date):
     local_dir = (
         Path(__file__).parent.parent
         / "04_spark_processing" / "output_data" / "enriched_orders"
-        / f"process_date={run_date}"
     )
 
     table_ref = f"{PROJECT_ID}.{BQ_DATASET_STAGING}.{BQ_TABLE_STAGING}"
@@ -72,6 +71,7 @@ def load_from_local(client, run_date):
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.PARQUET,
         write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+        autodetect=True, # Force BigQuery to read the schema from the files
     )
 
     # Load each file (concatenated into staging)

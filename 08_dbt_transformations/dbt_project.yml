@@ -1,0 +1,15 @@
+name: 'bigquery_migration_project'
+version: '1.0.0'
+config-version: 2
+
+profile: 'bigquery_migration_project'
+
+model-paths: ["models"]
+test-paths: ["tests"]
+
+target-path: "target"
+
+models:
+  bigquery_migration_project:
+    core:
+      +materialized: table

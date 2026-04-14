@@ -1,0 +1,24 @@
+version: 2
+
+sources:
+  - name: staging_dataset
+    database: aws-gcp-migration-490909
+    schema: staging
+    tables:
+      - name: enriched_orders_staging
+        description: "The raw data loaded from GCS via PySpark daily batch"
+        columns:
+          - name: order_id
+          - name: user_id
+          - name: amount
+          - name: currency
+          - name: status
+          - name: event_count
+          - name: event_types
+          - name: user_segment
+          - name: lifetime_value
+          - name: country
+          - name: row_hash
+          - name: created_at
+          - name: updated_at
+          - name: process_date
