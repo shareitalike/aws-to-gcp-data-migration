@@ -8,28 +8,28 @@ This diagram illustrates the end-to-end flow of the e-commerce migration project
 graph TD
     %% Source Layer
     subgraph "AWS Ecosystem (Source)"
-        S3[(AWS S3 Raw CSVs)]
+        S3[("AWS S3 Raw CSVs")]
     end
 
     %% Ingestion Layer
     subgraph "Ingestion & Landing (Bronze)"
-        GCS_LANDING[(GCS Landing Bucket)]
+        GCS_LANDING[("GCS Landing Bucket")]
         TRANSFER{"Cloud Storage Transfer"}
     end
 
     %% Processing Layer
     subgraph "Processing (Silver)"
         SPARK["PySpark Processing Engine<br/>(Deduplication & Enrichment)"]
-        GCS_PROCESSED[(GCS Processed Bucket<br/>(Parquet))]
+        GCS_PROCESSED[("GCS Processed Bucket (Parquet)")]
     end
 
     %% Warehouse Layer
     subgraph "BigQuery Warehouse (Gold)"
-        BQ_STAGING[(BQ Staging Table<br/>(Daily Transient))]
+        BQ_STAGING[("BQ Staging Table (Daily Transient)")]
         subgraph "dbt Managed Layer"
-            DBT_MERGE{"dbt MERGE Logic<br/>(Incremental)"}
-            BQ_PROD[(BQ Production Table<br/>(Medallion Gold))]
-            DBT_TEST["dbt Quality Tests<br/>(Circuit Breakers)"]
+            DBT_MERGE{"dbt MERGE Logic (Incremental)"}
+            BQ_PROD[("BQ Production Table (Medallion Gold)")]
+            DBT_TEST["dbt Quality Tests (Circuit Breakers)"]
         end
     end
 
