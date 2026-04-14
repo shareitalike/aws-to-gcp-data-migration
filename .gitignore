@@ -1,17 +1,51 @@
+# Environment and Secrets
 .env
-*.pyc
+.user.yml
+profiles.yml
+*.db
+airflow.db
+airflow.cfg
+webserver_config.py
+
+# Python and System
 __pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+.gemini/
+
+# Terraform and Infrastructure
 .terraform/
 *.tfstate*
+
+# Data (Never push raw/processed data to Git)
 output_data/
 *.parquet
 *.csv
 !01_sample_data/*.csv
-logs/
-airflow.db
-airflow.cfg
-webserver_config.py
 *.json
 !03_gcs_ingestion/terraform/**/*.json
-.snapshots/
-*.db
+
+# dbt Artifacts (Auto-generated)
+08_dbt_transformations/target/
+08_dbt_transformations/logs/
+08_dbt_transformations/.user.yml
+08_dbt_transformations/profiles.yml
+
+# Internal Development & Mocks
+06_airflow_orchestration/mock_orchestrator.py
+07_monitoring/verify_staging.py
+07_monitoring/verify_production.py
+scratch/
+tests/.pytest_cache/
+
+# Internal Study & Planning Docs (For your eyes only)
+docs/resume_*.md
+docs/junior_*.md
+docs/wsl_*.md
+docs/manual_vs_automated_flow.md
+docs/implementation_plan.md
+docs/interview_script_migration.md
+docs/gap_analysis.md
+execution_order.md
