@@ -15,8 +15,12 @@ A growing e-commerce company is migrating its analytical platform from AWS to GC
 
 ---
 
-## 🏛️ Architecture & Service Mapping
-We utilize a **Medallion-inspired arrival pattern** with a strict schema validation gate.
+---
+
+## 🏛️ System Architecture
+We utilize a **Medallion-inspired arrival pattern** (Bronze ➔ Silver ➔ Gold) with a strict schema validation gate.
+
+![Architecture Diagram](docs/architecture.md)
 
 | Component | AWS Service | GCP Service | Why? |
 | :--- | :--- | :--- | :--- |
@@ -28,10 +32,11 @@ We utilize a **Medallion-inspired arrival pattern** with a strict schema validat
 ---
 
 ## 🚀 Technical Deep Dives (Senior Level)
+*   **[Full Architecture Diagram](docs/architecture.md):** Detailed visualization of the Medallion data flow.
+*   **[Pipeline Observability](docs/PIPELINE_OBSERVABILITY.md):** Real-time Data Quality Dashboards & reconciliation logic.
 *   **[Design Decisions](docs/design_decisions.md):** The "Why" behind Spark, BigQuery, and Airflow.
+*   **[dbt Incremental Logic](08_dbt_transformations/models/core/enriched_orders.sql):** High-watermark processing for warehouse cost-efficiency.
 *   **[Data Contract & Schema](docs/data_contract.md):** How we enforce quality between AWS and GCP.
-*   **[Observability & Reliability](docs/observability.md):** Metrics, logging, and failure handling strategy.
-*   **[Incremental ETL Logic](04_spark_processing/process_incremental_orders.py):** High-watermark processing for cost-efficiency.
 *   **[Automated Testing](tests/test_transform.py):** PyTest suite for verifying Spark transformations.
 
 ---
