@@ -52,6 +52,8 @@ docs/maturity_*.md
 docs/design_*.md
 docs/tradeoffs_*.md
 docs/gap_analysis.md
+docs/AIRFLOW_GUIDE.md
+docs/PIPELINE_OBSERVABILITY.md
 execution_order.md
 
 # Interview-Ready Content (Annotated code and detailed walkthroughs)

@@ -9,6 +9,20 @@ models:
         tests:
           - unique
           - not_null
+
+  - name: pipeline_metrics
+    description: >
+      Executive Dashboard for Pipeline Observability. 
+      Compares Staging vs Production to detect data loss, latency, and duplicates.
+    columns:
+      - name: process_date
+        description: "The business date being analyzed."
+      - name: completeness_status
+        description: "Indicator of row match between staging and production."
+      - name: revenue_variance
+        description: "Monetary difference between staging and production (must be 0.0)."
+      - name: minutes_since_last_run
+        description: "Pipeline latency indicator (SLA tracking)."
       - name: amount
         description: "The total monetary amount"
       - name: process_date

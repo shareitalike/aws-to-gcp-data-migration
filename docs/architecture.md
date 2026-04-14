@@ -1,59 +1,76 @@
-# 🏗️ Project Architecture & Service Mapping
+# 🏗️ Cloud Data Architecture: AWS to GCP Medallion Pipeline
 
-This document provides a high-level overview of the end-to-end data migration architecture and how AWS services map to their Google Cloud (GCP) equivalents.
+This diagram illustrates the end-to-end flow of the e-commerce migration project, following a **Medallion Architecture** (Bronze ➔ Silver ➔ Gold) with a dedicated **Orchestration Layer**.
 
-## 1. End-to-End Data Flow (Mermaid Diagram)
+## 📊 System Architecture Diagram
 
 ```mermaid
-graph LR
-    subgraph "AWS Ecosystem"
-        S3[Amazon S3 <br/> 'Raw CSVs']
+graph TD
+    %% Source Layer
+    subgraph "AWS Ecosystem (Source)"
+        S3[("AWS S3 (Raw CSVs)") ]
     end
 
-    subgraph "Ingestion & Validation"
-        TRAN[Transfer Script <br/> 'S3 to GCS'] --> GCS_RAW[GCS Bucket <br/> 'raw/']
-        VAL[Validation Script <br/> 'Python Gate'] --> GCS_VAL[GCS Bucket <br/> 'validated/']
-        GCS_RAW --> VAL
-        VAL --> GCS_QUA[GCS Bucket <br/> 'quarantine/']
+    %% Ingestion Layer
+    subgraph "Ingestion & Landing (Bronze)"
+        GCS_LANDING[("GCS Landing Bucket")]
+        TRANSFER{"Cloud Storage Transfer"}
     end
 
-    subgraph "Processing Layer"
-        SPARK[PySpark Job <br/> 'Dataproc / Local'] --> GCS_PRO[GCS Bucket <br/> 'enriched/']
-        GCS_VAL --> SPARK
+    %% Processing Layer
+    subgraph "Processing (Silver)"
+        SPARK["PySpark Processing Engine<br/>(Deduplication & Enrichment)"]
+        GCS_PROCESSED[("GCS Processed Bucket<br/>(Parquet)")]
     end
 
-    subgraph "Analytics Warehouse"
-        BQ_STG[BigQuery Staging] --> BQ_MER[BigQuery MERGE]
-        BQ_MER --> BQ_PROD[BigQuery Production <br/> 'analytics']
-        GCS_PRO --> BQ_STG
+    %% Warehouse Layer
+    subgraph "BigQuery Warehouse (Gold)"
+        BQ_STAGING[("BQ Staging Table<br/>(Daily Transient)")]
+        subgraph "dbt Managed Layer"
+            DBT_MERGE{"dbt MERGE Logic<br/>(Incremental)"}
+            BQ_PROD[("BQ Production Table<br/>(Medallion Gold)")]
+            DBT_TEST["dbt Quality Tests<br/>(Circuit Breakers)"]
+        end
     end
 
-    subgraph "Orchestration & Quality"
-        AIR[Apache Airflow] --> TRAN
-        DQ[DQ Checks] --> BQ_PROD
+    %% Control Plane
+    subgraph "Orchestration & Control"
+        AIRFLOW{{"Airflow DAG<br/>(The Conductor)"}}
     end
+
+    %% Relationships
+    S3 -->|Transfer Service| TRANSFER
+    TRANSFER --> GCS_LANDING
+    GCS_LANDING -->|Read| SPARK
+    SPARK -->|Write| GCS_PROCESSED
+    
+    GCS_PROCESSED -->|Load Job| BQ_STAGING
+    BQ_STAGING -->|ref| DBT_MERGE
+    DBT_MERGE -->|Upsert| BQ_PROD
+    BQ_PROD --> DBT_TEST
+    
+    %% Orchestration Paths
+    AIRFLOW -.->|Triggers| SPARK
+    AIRFLOW -.->|Triggers| BQ_STAGING
+    AIRFLOW -.->|Triggers| DBT_MERGE
 ```
 
 ---
 
-## 2. Cloud Service Mapping Table
+## 🛠️ Component Breakdown (FOR INTERVIEW)
 
-| Component | AWS Service | GCP Service | Why the choice? |
-| :--- | :--- | :--- | :--- |
-| **Object Storage** | Amazon S3 | Cloud Storage (GCS) | Industry standard for data lakes; HDFS-compatible. |
-| **Distributed Compute** | EMR / Glue | Dataproc | Managed Spark/Hadoop cluster; ideal for lift-and-shift migration. |
-| **Data Warehouse** | Redshift | BigQuery | Serverless, highly scalable, and superior separation of storage/compute. |
-| **Orchestration** | Managed Airflow (MWAA) | Cloud Composer | Native Airflow integration for complex DAG dependencies. |
-| **IAM & Security** | AWS IAM | Cloud IAM | Built-in least-privilege access control across all resources. |
-| **Monitoring** | CloudWatch | Cloud Logging / Monitoring | Centralized observability for job performance and failure metrics. |
+### 1. Ingestion (AWS ➔ GCP)
+- **Tech**: GCS Transfer Service / Google Cloud SDK.
+- **Narrative**: *"We treat AWS S3 as our immutable legacy source. We land data in GCS as-is to preserve raw history before any processing happens."*
 
----
+### 2. Silver Layer (PySpark)
+- **Tech**: Apache Spark 3.5.0.
+- **Narrative**: *"Spark acts as our heavy-lifter. We perform complex deduplication and join orders with user segments here. We store the result in Parquet format to leverage columnar compression and schema preservation."*
 
-## 3. Data Storage Layout (Best Practices)
+### 3. Gold Layer (BigQuery & dbt)
+- **Tech**: BigQuery + dbt-fusion.
+- **Narrative**: *"We use the 'Staging-to-Production' design. dbt handles our incremental materialization, ensuring we only MERGE new data each night, significantly reducing BigQuery slot costs."*
 
-We implemented a **Medallion-inspired** folder structure in GCS to ensure clear data lineage:
-
-1.  `gs://...raw/`: Immutable landing zone for raw S3 files.
-2.  `gs://...validated/`: Schema-verified files ready for processing.
-3.  `gs://...quarantine/`: Corrupt or schema-mismatched files for manual audit.
-4.  `gs://...processed/`: Enriched Parquet files (partitioned by `process_date`).
+### 4. Orchestration (Airflow)
+- **Tech**: Apache Airflow.
+- **Narrative**: *"Airflow is the central nervous system. It ensures that if the Spark job fails, the dbt transformations never trigger, protecting our Gold layer from incomplete data."*
