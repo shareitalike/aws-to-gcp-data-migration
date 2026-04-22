@@ -14,12 +14,15 @@ graph TD
     %% Ingestion Layer
     subgraph "Ingestion & Landing (Bronze)"
         GCS_LANDING[("GCS Landing Bucket")]
-        TRANSFER{"Cloud Storage Transfer"}
+        TRANSFER{"Cloud Storage Transfer<br/>(SDK / Boto3)"}
     end
 
     %% Processing Layer
     subgraph "Processing (Silver)"
-        SPARK["PySpark Processing Engine<br/>(Deduplication & Enrichment)"]
+        subgraph "Custom Airflow Container"
+            JAVA["JRE 17 / Spark Libs"]
+            SPARK["PySpark Enrichment Logic"]
+        end
         GCS_PROCESSED[("GCS Processed Bucket (Parquet)")]
     end
 
@@ -36,6 +39,7 @@ graph TD
     %% Control Plane
     subgraph "Orchestration & Control"
         AIRFLOW{{"Airflow DAG<br/>(The Conductor)"}}
+        ENV[".env / Secrets Management"]
     end
 
     %% Relationships
@@ -50,9 +54,11 @@ graph TD
     BQ_PROD --> DBT_TEST
     
     %% Orchestration Paths
-    AIRFLOW -.->|Triggers| SPARK
-    AIRFLOW -.->|Triggers| BQ_STAGING
-    AIRFLOW -.->|Triggers| DBT_MERGE
+    AIRFLOW -.->|1. Trigger Transfer| TRANSFER
+    AIRFLOW -.->|2. Trigger Spark| SPARK
+    AIRFLOW -.->|3. Trigger BQ Load| BQ_STAGING
+    AIRFLOW -.->|4. Trigger dbt| DBT_MERGE
+    ENV -.->|Configure| AIRFLOW
 ```
 
 ---
@@ -71,6 +77,6 @@ graph TD
 - **Tech**: BigQuery + dbt-fusion.
 - **Narrative**: *"We use the 'Staging-to-Production' design. dbt handles our incremental materialization, ensuring we only MERGE new data each night, significantly reducing BigQuery slot costs."*
 
-### 4. Orchestration (Airflow)
-- **Tech**: Apache Airflow.
-- **Narrative**: *"Airflow is the central nervous system. It ensures that if the Spark job fails, the dbt transformations never trigger, protecting our Gold layer from incomplete data."*
+### 4. Orchestration (Airflow & Docker)
+- **Tech**: Apache Airflow 2.8.1 (LocalExecutor) + Custom Docker Image.
+- **Narrative**: *"Airflow is the central nervous system. To ensure high availability and portability, we containerized the entire orchestration suite. Crucially, we extended the base Airflow image with OpenJDK 17 and Spark libraries, allowing high-performance PySpark jobs to run locally within the airflow-scheduler, ensuring that if any stage failed (like a 404 on a GCS bucket), the pipeline would halt and retry gracefully."*

@@ -15,13 +15,13 @@ from pathlib import Path
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 
-# Dynamic path resolution to ensure it works anywhere on your machine
-PROJECT_DIR = str(Path(__file__).parent.parent.parent)
+# Dynamic path resolution (supports local standalone or Docker)
+PROJECT_DIR = os.environ.get("PROJECT_DIR", str(Path(__file__).parent.parent.parent))
 DBT_DIR = os.path.join(PROJECT_DIR, "08_dbt_transformations")
 
 default_args = {
     "owner": "data-engineering",
-    "depends_on_past": True,  # Ensures sequential processing of days
+    "depends_on_past": False,  # Allows the pipeline to start immediately
     "email_on_failure": False,
     "retries": 1,
     "retry_delay": timedelta(minutes=5),
@@ -36,11 +36,25 @@ with DAG(
     tags=["aws-to-gcp", "dbt", "pyspark"],
     doc_md="""
     ## End-to-End AWS-GCP Medallion Pipeline
-    1. **Spark**: Enriches raw data.
-    2. **Load**: Moves Parquet to BQ Staging.
-    3. **dbt**: Performs Atomic MERGE into Production and runs Quality tests.
+    0. **S3 Transfer**: Pulls raw data from AWS to GCS.
+    1. **Validation**: Checks landing zone schema and moves to validated.
+    2. **Spark**: Enriches raw data.
+    3. **Load**: Moves Parquet to BQ Staging.
+    4. **dbt**: Performs Atomic MERGE into Production and runs Quality tests.
     """,
 ) as dag:
+
+    # Task 0a: Extract from S3
+    extract_from_s3 = BashOperator(
+        task_id="extract_from_s3",
+        bash_command=f"python {PROJECT_DIR}/03_gcs_ingestion/transfer_s3_to_gcs.py",
+    )
+
+    # Task 0b: Validate landing zone
+    validate_landing_data = BashOperator(
+        task_id="validate_landing_data",
+        bash_command=f"python {PROJECT_DIR}/03_gcs_ingestion/validate_landing.py",
+    )
 
     # Task 1: Spark Processing (Clean & Enrich)
     spark_process = BashOperator(
@@ -61,7 +75,6 @@ with DAG(
     )
 
     # Task 3: dbt Transformation (Incremental MERGE)
-    # Note: We pass the project dir and profile dir to ensure dbt finds everything
     dbt_run = BashOperator(
         task_id="dbt_transformation_merge",
         bash_command=(
@@ -79,5 +92,5 @@ with DAG(
         ),
     )
 
-    # Flow: Spark -> Load -> Transform -> Test
-    spark_process >> bq_load_staging >> dbt_run >> dbt_test
+    # Flow: Extract -> Validate -> Spark -> Load -> Transform -> Test
+    extract_from_s3 >> validate_landing_data >> spark_process >> bq_load_staging >> dbt_run >> dbt_test

@@ -49,13 +49,26 @@ We utilize a **Medallion-inspired arrival pattern** (Bronze ➔ Silver ➔ Gold)
 ---
 
 ## 🏁 How to Run
-1.  **Configure Environment:** Populate `.env` with cloud credentials.
-2.  **Infrastructure:** Run `terraform apply` in `03_gcs_ingestion/terraform/`.
-3.  **Local Job Execution:**
-    ```bash
-    # Run full daily load
-    python 04_spark_processing/process_daily_orders.py --date 2026-03-19 --source local
-    
-    # Run unit tests
-    python -m pytest tests/test_transform.py
-    ```
+
+### 1. Configure Environment
+Populate `.env` with your AWS and GCP credentials.
+
+### 2. Infrastructure
+Run `terraform apply` in `03_gcs_ingestion/terraform/` to setup the Data Lake and BigQuery datasets.
+
+### 3. Orchestration (Airflow)
+This project is containerized for production consistency.
+```bash
+cd 06_airflow_orchestration
+docker compose up -d --build
+```
+*Access the UI at `http://localhost:8081` (Admin / Admin).*
+
+### 4. Direct Script Execution (Optional)
+```bash
+# Run manual daily load
+python 04_spark_processing/process_daily_orders.py --date 2026-03-19 --source local
+
+# Run unit tests
+python -m pytest tests/test_transform.py
+```

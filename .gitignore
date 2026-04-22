@@ -15,11 +15,13 @@ __pycache__/
 Thumbs.db
 .gemini/
 
-# Terraform and Infrastructure
+# Data & Secrets (CRITICAL: Never push these)
+config/secrets/
+03_gcs_ingestion/validation_dedup.db
+06_airflow_orchestration/logs/
+06_airflow_orchestration/plugins/
 .terraform/
 *.tfstate*
-
-# Data (Never push raw/processed data to Git)
 output_data/
 *.parquet
 *.csv
@@ -40,7 +42,19 @@ output_data/
 scratch/
 tests/.pytest_cache/
 
-# Internal Study & Planning Docs (For your eyes only)
+# Professional Documentation (Public for Portfolio)
+docs/architecture.md
+docs/design_decisions.md
+docs/PIPELINE_OBSERVABILITY.md
+docs/airflow_technical_deep_dive.md
+docs/aws_setup_guide.md
+docs/gcp_setup_guide.md
+docs/data_contract.md
+docs/observability.md
+
+# Private Study & Interview Prep (Hidden from GitHub)
+docs/word_exports/
+docs/interview_prep/
 docs/resume_*.md
 docs/junior_*.md
 docs/wsl_*.md
@@ -49,11 +63,9 @@ docs/simulation_*.md
 docs/implementation_plan.md
 docs/interview_*.md
 docs/maturity_*.md
-docs/design_*.md
 docs/tradeoffs_*.md
 docs/gap_analysis.md
 docs/AIRFLOW_GUIDE.md
-docs/PIPELINE_OBSERVABILITY.md
 execution_order.md
 
 # Interview-Ready Content (Annotated code and detailed walkthroughs)
